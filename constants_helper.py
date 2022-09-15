@@ -1,0 +1,3 @@
+
+
+FILE_EXTENSION_BINETFLOW = r'.binetflow'
