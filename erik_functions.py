@@ -26,11 +26,11 @@ functions       top level, more complex funtions
 import sys
 #sys.path.append('.')
 
-from modules_erik import erik_functions_init as e
-from modules_erik import erik_functions_files as e_fil
-from modules_erik import erik_functions_remote as e_rem
-from modules_erik import erik_functions_support as e_sup
-from modules_erik import erik_functions_help as e_help
+import erik_functions_init as e
+import erik_functions_files as e_fil
+import erik_functions_remote as e_rem
+import erik_functions_support as e_sup
+import erik_functions_help as e_help
 
 
 

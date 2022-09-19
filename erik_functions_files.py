@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from modules_erik import erik_functions_init as e
-from modules_erik import erik_functions_support as e_sup
+import erik_functions_init as e
+import erik_functions_support as e_sup
 
 import os,time, shutil, tarfile, pathlib, time
 import os
 import pickle
+import subprocess
 
 
 
@@ -329,6 +330,20 @@ def find_string_in_file(dir_search, dir_dst, search_string):
 
     return False
 
+#   get total size of a dir
+def dir_size(dir):
+    total_size = 0
+
+    #for path,dirs,files in os.walk(dir):
+    #    for f in files:
+    #        fp = os.path.join(path,f)
+    #        total_size += os.path.getsize(fp)
+
+    total_size = subprocess.check_output(['du', '-sb', dir]).split()[0].decode('utf-8')
+
+    return total_size
+
+
 
 
 
@@ -402,6 +417,17 @@ def file_and_dir_from_path(pathfile):
     dirname = dirname + '/'
 
     return dirname,filename
+
+# Find files in subdirs with correct extension
+def files_in_dirs(base_dir, extension='.csv'):
+    return_files = []
+    for path, current_directory, files in os.walk(base_dir):
+        for file in files:
+            if file.endswith(extension):
+                return_files.append(os.path.join(path, file))
+    return return_files
+
+
 
 
 

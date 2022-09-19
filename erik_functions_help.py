@@ -24,10 +24,10 @@ functions       top level, more complex funtions
 
 '''
 
-from modules_erik import erik_functions_init as e
-from modules_erik import erik_functions_files as e_fil
-from modules_erik import erik_functions_support as e_sup
-from modules_erik import erik_functions_remote as e_rem
+import erik_functions_init as e
+import erik_functions_files as e_fil
+import erik_functions_support as e_sup
+import erik_functions_remote as e_rem
 
 
 
