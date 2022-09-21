@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from modules_erik import erik_functions_init as e
-from modules_erik import erik_functions_files as e_fil
-from modules_erik import erik_functions_support as e_sup
+import erik_functions_init as e
+import erik_functions_files as e_fil
+import erik_functions_support as e_sup
 
 import os,time, wget
 import paramiko
