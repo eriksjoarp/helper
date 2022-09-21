@@ -160,6 +160,9 @@ def get_subfolders(dir_src):
     folders = [f.path for f in os.scandir(dir_src) if f.is_dir()]
     return folders
 
+def filename_from_path(path):
+    return os.path.basename(path)
+
 
 ##########                  EXISTENCE   CHECKS              ##########
 def file_exists(pathfile):
