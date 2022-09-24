@@ -3,10 +3,12 @@
 import erik_functions_init as e
 import erik_functions_support as e_sup
 
-import os,time, shutil, tarfile, pathlib, time
-import os
+import os, tarfile, pathlib, time
+import wget
 import pickle
 import subprocess
+import cv2
+import yaml
 
 
 
@@ -23,7 +25,6 @@ def create_file_from_list(dir_dst, file_dst, lista , chmod = '644'):
 
     for line0 in lista:
         append_line_to_file(pathfile,line0)
-
 
 
 #   append string to last line in file
@@ -165,9 +166,13 @@ def filename_from_path(path):
 
 
 ##########                  EXISTENCE   CHECKS              ##########
-def file_exists(pathfile):
-    bExist = os.path.isfile(pathfile)
-    return bExist
+# Check if file exists
+def file_exists(path):
+    if os.path.exists(path):
+        return True
+    else:
+        print('ERROR cannot find file ' + path)
+        return False
 
 def path_exists(dir_src):
     bExist = os.path.exists(dir_src)
@@ -469,60 +474,65 @@ def remove_flag(path, flagname):
 
 
 
-#############                   SHUTIL                      #################
+##############          load from disk such as image            #################
 
-
-
-
-
-
-
-'''
-
-
-#   copy directory to other place with everything in it
-def copy_dir(path_from , path_to):
+def image_read_from_file(path):
     try:
-        create_all_dirs(path_to)
-        shutil.copytree(path_from,path_to)
+        img = cv2.imread(path)
     except:
-        print('Error copying: ' + path_from )
+        print('Could not find file : ' + str(path))
+        return False
+    return img
 
+def load_images_from_folder(path):
+    images = []
+    for filename in os.listdir(path):
+        img = cv2.imread(os.path.join(path,filename))
+        if img is not None:
+            images.append(img)
+    return images
 
-
-#   copy file
-def copy_file(path,filename,path_to):
-    create_all_dirs(path_to)
+# write a list to file
+def write_list_to_file(path,my_list):
+    try:
+        os.remove(path)
+    except Exception as e:
+        pass
 
     try:
-        shutil.copy(path + filename , path_to)
-    except:
-        print('Error copying: ' + path + filename )
-        
-        
-def shutil_copy(dir_src , file_src ,  dir_dst, forced = True):
-    success = True
+        with open(path, 'w') as f:
+            f.write("\n".join(my_list))
+        return True
+    except Exception as e:
+        pass
+    return False
 
-    create_all_dirs(dir_dst)
-    if file_src != 'NONE':
-        if not(file_exists(dir_src + file_src)):
-            print('Error source file ' + dir_src + file_src + ' does not exist')
+# Download file from url to a local path
+def download_file(url, dst_dir, update=False):
+    print('Downloading ' + url)
+    wget.download(url, out=dst_dir)
+    #wget.download(url)
+    print('Downloaded ' + url)
 
-        if file_exists(dir_src + file_src):
-            if forced:
-                try:
-                    os.remove(dir_dst + file_src)
-                    shutil.copy(dir_src + file_src , dir_dst)
-                except:
-                    print('Error could not copy :' + dir_src + file_src + ' to ' + dir_dst)
-                    success = False
-        else:
-            try:
-                shutil.copy(dir_src + file_src, dir_dst)
-            except:
-                print('Error could not copy :' + dir_src + file_src + ' to ' + dir_dst)
-                success = False
+# read yaml file
+def load_config_yaml(dir_yaml, filename):
+    path = os.path.join(dir_yaml, filename)
+    with open(path) as file:
+        try:
+            yaml_data = yaml.safe_load(file)
+        except:
+            print('ERROR cannot open file ' + path)
+            return False
+    return yaml_data
 
-    return success
-'''
+
+
+
+
+
+
+
+
+
+
 

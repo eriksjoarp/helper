@@ -30,7 +30,6 @@ import erik_functions_support as e_sup
 import erik_functions_remote as e_rem
 
 
-
 # works for root no sudo etc        RAMDISK
 def ramdisk(ip_node, create, ramdisk_size=6000, mnt_dir='/root/fuzzing', temporary = False):
     e_fil.make_dir_bash('~/tmp')
