@@ -8,8 +8,7 @@ import wget
 import pickle
 import subprocess
 import cv2
-import yaml
-
+#import yaml
 
 
 #   create a new file and overwrite it , add lines to it from list
@@ -178,14 +177,27 @@ def path_exists(dir_src):
     bExist = os.path.exists(dir_src)
     return bExist
 
+def path_get_dir_and_file(path):
+    filename = os.path.basename(path)
+    directory = os.path.dirname(path)
+    return directory, filename
+
+#   check if a path is a directory
+def is_directory(path):
+    if os.path.isdir(path):
+        return True
+    return False
+
+
 
 
 ######      COPY    MOVE    DELETE  RELATED
 def create_missing_dirs(pathfile):
     # check if it ends with / then its a dir
-    dir_src = pathfile
-    if not(e_sup.check_string_endswith_char(pathfile , '/')):
-        dir_src, file_Src  = pathfile.rsplit('/',1)
+    #dir_src = pathfile
+    #if not(e_sup.check_string_endswith_char(pathfile , '/')):
+    #    dir_src, file_Src  = pathfile.rsplit('/',1)
+    dir_src, file_Src = path_get_dir_and_file(pathfile)
 
     if not path_exists(path_exists(dir_src)):
         make_dir(dir_src)
