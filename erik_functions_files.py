@@ -78,7 +78,7 @@ def execute_command(command, sleep_secs = 0.2):
     return results
 
 #   get all filenames of an extension in a directory
-def get_filenames_in_dir(dir_src, extension ='NONE'):
+def get_filenames_in_dir(dir_src, extension ='NONE', full_path = False):
     files=[]
     dir_clean = return_dir_with_slash(dir_src)
 
@@ -87,12 +87,13 @@ def get_filenames_in_dir(dir_src, extension ='NONE'):
             filenames = os.listdir(dir_clean)
             for filename in filenames:
                 if os.path.isfile(dir_clean + filename):
-
+                    if full_path:
+                        filename = os.path.join(dir_src, filename)
                     if extension == 'NONE':
                         files.append(filename)
                     else:
                         if filename.endswith(extension):
-                            files.append(filename)
+                                files.append(filename)
         except:
             print ("Error get_files_in_dir")
             return False
