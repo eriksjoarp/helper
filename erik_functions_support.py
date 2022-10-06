@@ -6,7 +6,8 @@ import difflib, random
 
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
-import erik_functions_init as e
+
+from . import erik_functions_init as e
 
 
 

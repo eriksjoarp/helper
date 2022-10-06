@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import erik_functions_init as e
-import erik_functions_files as e_fil
-import erik_functions_support as e_sup
+from . import erik_functions_init as e
+from . import erik_functions_files as e_fil
+from . import erik_functions_support as e_sup
 
 import os,time, wget
 import paramiko
@@ -212,6 +212,15 @@ def download_if_not_exist(link , path_to , filename):
         download_file(link, path_to, filename)
     else:
         print('File already exist' +  path_to + filename)
+
+
+def wget_download(url, save_dir, force_overwrite=False):
+    try:
+        wget.download(url, out=save_dir)
+    except Exception as e:
+        print('ERROR could not download ' + url)
+        return False
+    return True
 
 
 ##################################                                                                          ######################################

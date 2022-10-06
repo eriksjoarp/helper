@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import erik_functions_init as e
-import erik_functions_support as e_sup
+from helper import erik_functions_init as e
+from helper import erik_functions_support as e_sup
 
 import os, tarfile, pathlib, time
 import wget
@@ -9,6 +9,24 @@ import pickle
 import subprocess
 import cv2
 #import yaml
+from os import listdir
+from os.path import isfile, join
+
+
+def files_in_dir(dir_files):
+    if os.path.exists(dir_files):
+        files = [f for f in listdir(dir_files) if isfile(join(dir_files, f))]
+        return files
+    else:
+        print(r'''Error, directory doesn't exist:''' + dir_files)
+        return False
+
+def file_name_from_path(path):
+    if file_exists(path):
+        file_base = os.path.basename(path)
+        file_name, file_ext = os.path.splitext(file_base)
+        return file_name, file_ext
+    return False, False
 
 
 #   create a new file and overwrite it , add lines to it from list
@@ -188,7 +206,6 @@ def is_directory(path):
     if os.path.isdir(path):
         return True
     return False
-
 
 
 
