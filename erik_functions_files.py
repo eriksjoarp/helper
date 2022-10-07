@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from helper import erik_functions_init as e
-from helper import erik_functions_support as e_sup
+#from helper \
+import erik_functions_support as e_sup
 
 import os, tarfile, pathlib, time
 import wget
@@ -11,7 +11,47 @@ import cv2
 #import yaml
 from os import listdir
 from os.path import isfile, join
+import json
 
+
+def json_load(path_json):
+    if file_exists(path_json):
+        try:
+            with open(path_json) as json_file:
+                json_data = json.load(json_file)
+                return json_data
+        except Exception as e:
+            print('ERROR Could not read json file : ' + str(e))
+            return False
+
+
+def json_dump(path_json, json_data):
+    try:
+        with open(path_json, 'w') as outfile:
+            json.dump(json_data, outfile)
+    except Exception as e:
+        print('ERROR Could not write json file : ' + str(e))
+        return False
+
+
+def files_images_in_dir(dir_files, extensions=['jpg','png','jpeg']):
+    path_images = []
+    files = files_in_dir_full_path(dir_files)
+    for file_iter in files:
+        for ext in extensions:
+            _, file_ext = file_name_from_path(file_iter)
+            if file_ext.lower() == ext:
+                path_images.append(file_iter)
+    return path_images
+
+
+def files_in_dir_full_path(dir_files):
+    files = files_in_dir(dir_files)
+    path_full = []
+    for filename in files:
+        path_file = os.path.join(dir_files, filename)
+        path_full.append(path_file)
+    return path_full
 
 def files_in_dir(dir_files):
     if os.path.exists(dir_files):
@@ -27,6 +67,14 @@ def file_name_from_path(path):
         file_name, file_ext = os.path.splitext(file_base)
         return file_name, file_ext
     return False, False
+
+def path_split_from_path(path):
+    if file_exists(path):
+        dir_name = os.path.dirname(path)
+        file_base = os.path.basename(path)
+        file_name, file_ext = os.path.splitext(file_base)
+        return dir_name, file_name, file_ext
+    return False, False, False
 
 
 #   create a new file and overwrite it , add lines to it from list
@@ -185,11 +233,12 @@ def filename_from_path(path):
 
 ##########                  EXISTENCE   CHECKS              ##########
 # Check if file exists
-def file_exists(path):
+def file_exists(path, supress_not_found=False):
     if os.path.exists(path):
         return True
     else:
-        print('ERROR cannot find file ' + path)
+        if not(supress_not_found):
+            print('ERROR cannot find file ' + path)
         return False
 
 def path_exists(dir_src):
