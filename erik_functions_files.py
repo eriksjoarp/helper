@@ -34,7 +34,7 @@ def json_dump(path_json, json_data):
         return False
 
 
-def files_images_in_dir(dir_files, extensions=['jpg','png','jpeg']):
+def files_images_in_dir(dir_files, extensions=['.jpg','.png','.jpeg']):
     path_images = []
     files = files_in_dir_full_path(dir_files)
     for file_iter in files:
@@ -586,12 +586,6 @@ def write_list_to_file(path,my_list):
         pass
     return False
 
-# Download file from url to a local path
-def download_file(url, dst_dir, update=False):
-    print('Downloading ' + url)
-    wget.download(url, out=dst_dir)
-    #wget.download(url)
-    print('Downloaded ' + url)
 
 # read yaml file
 def load_config_yaml(dir_yaml, filename):
