@@ -28,7 +28,6 @@ import sys
 
 import erik_functions_init as e
 import erik_functions_files as e_fil
-import erik_functions_remote as e_rem
 import erik_functions_support as e_sup
 import erik_functions_help as e_help
 

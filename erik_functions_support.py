@@ -7,7 +7,7 @@ import difflib, random
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
 
-import erik_functions_init as e
+from helper import erik_functions_init as e
 
 
 #   get key in dictionary, if it does not exist return the alternative

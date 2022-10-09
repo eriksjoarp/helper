@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #from helper \
-import erik_functions_support as e_sup
+from helper import erik_functions_support as e_sup
 
 import os, tarfile, pathlib, time
 import wget

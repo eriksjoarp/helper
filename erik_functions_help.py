@@ -24,10 +24,10 @@ functions       top level, more complex funtions
 
 '''
 
-import erik_functions_init as e
-import erik_functions_files as e_fil
-import erik_functions_support as e_sup
-import erik_functions_remote as e_rem
+from helper import erik_functions_init as e
+from helper import erik_functions_files as e_fil
+from helper import erik_functions_support as e_sup
+from helper import erik_functions_remote as e_rem
 
 
 # works for root no sudo etc        RAMDISK
