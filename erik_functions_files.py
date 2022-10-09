@@ -565,11 +565,13 @@ def image_read_from_file(path):
 
 def load_images_from_folder(path):
     images = []
+    path_images = []
     for filename in os.listdir(path):
         img = cv2.imread(os.path.join(path,filename))
         if img is not None:
             images.append(img)
-    return images
+            path_images.append((filename))
+    return images, path_images
 
 # write a list to file
 def write_list_to_file(path,my_list):
