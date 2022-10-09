@@ -33,10 +33,10 @@ def image_split_save(image_cuts, path_image, dir_output=None):
         dir_output = dir_name
 
     for image_cut in image_cuts:
-        filename_new = file_name + '_' + str(counter) + file_ext
+        filename_new = file_name + '_' + str.zfill(str(counter),6) + file_ext
         path_save = os.path.join(dir_output, filename_new)
         cv2.imwrite(path_save, image_cut)
-        counter += 1
+        counter +=1
 
 
 # get crop from range of h,w with size
