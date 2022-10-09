@@ -77,7 +77,7 @@ def group_images_by_category_into_directorys(labels, label_names, path_images, d
     np_unique_labels = np.unique(np_labels)
 
     # create directorys
-    for label in range(np_unique_labels):
+    for label in np_unique_labels:
         os.makedirs(dir_save, label)
 
     # copy the files
