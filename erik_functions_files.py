@@ -61,6 +61,16 @@ def files_in_dir(dir_files):
         print(r'''Error, directory doesn't exist:''' + dir_files)
         return False
 
+
+def dirs_in_dir(dir_files):
+    if os.path.exists(dir_files):
+        dirs = [f for f in listdir(dir_files) if os.path.isdir(join(dir_files, f))]
+        return dirs
+    else:
+        print(r'''Error, directory doesn't exist:''' + dir_files)
+        return False
+
+
 def file_name_from_path(path):
     if file_exists(path):
         file_base = os.path.basename(path)
