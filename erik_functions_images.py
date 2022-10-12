@@ -1,7 +1,8 @@
 import os
 import cv2
 from helper import erik_functions_files
-
+import numpy as np
+import shutil
 
 
 
@@ -71,12 +72,28 @@ def image_split(path_image, size_split=64, save_path=None):
         image_split_save(image_cuts, path_image, save_path)
     return image_cuts
 
+<<<<<<< HEAD
 # takes an array of images and splits them as a grid and saves the portions in a new directory
 def split_images_into_new_dir(dir_images, dir_images_out, size):
     images = erik_functions_files.files_images_in_dir(dir_images)
     for path_image in images:
         #   def image_split(path_image, grid_size=2, save_path=None):
         image_split(path_image, size, dir_images_out)
+=======
+def group_images_by_category_into_directorys(labels, label_names, path_images, dir_save):
+    np_labels = np.array(labels)
+    np_unique_labels = np.unique(np_labels)
+
+    # create directorys
+    for label in np_unique_labels:
+        os.makedirs(dir_save, label)
+
+    # copy the files
+    for i in range(len(labels)):
+        filename = os.path.basename(path_images[i])
+        path_save_image = os.path.join(dir_save, labels[i], filename)
+        shutil.copyfile(path_images[i], path_save_image)
+>>>>>>> 7a6e28cb7bc220f6b2e1b91211d42ee5983d4f9d
 
 
 
