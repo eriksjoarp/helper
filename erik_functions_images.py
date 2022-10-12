@@ -61,8 +61,8 @@ def image_split(path_image, size_split=64, save_path=None):
     h_cuts = int(h // size_split)
     w_cuts = int(w // size_split)
 
-    for h_cut in range(h_cuts-1):
-        for w_cut in range(w_cuts-1):
+    for h_cut in range(h_cuts):
+        for w_cut in range(w_cuts):
             w1, w2, h1, h2 = get_crop(h_cut, w_cut, size_split, size_split)
             image_cut = image[h1:h2,w1:w2]
             image_cuts.append(image_cut)
@@ -70,6 +70,14 @@ def image_split(path_image, size_split=64, save_path=None):
     if save_path != None:
         image_split_save(image_cuts, path_image, save_path)
     return image_cuts
+
+# takes an array of images and splits them as a grid and saves the portions in a new directory
+def split_images_into_new_dir(dir_images, dir_images_out, size):
+    images = erik_functions_files.files_images_in_dir(dir_images)
+    for path_image in images:
+        #   def image_split(path_image, grid_size=2, save_path=None):
+        image_split(path_image, size, dir_images_out)
+
 
 
 '''
