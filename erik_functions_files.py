@@ -342,7 +342,10 @@ def load_images_from_folder(path):
 
 
 # copy list of files into dir_save
-def copy_files(path_files, dir_save):
+def copy_files(path_files, dir_save, delete_old=False):
+    if delete_old:
+        shutil.rmtree(dir_save, ignore_errors=True)
+
     os.makedirs(dir_save, exist_ok=True)
     for path_file in path_files:
         shutil.copy2(path_file, dir_save)
