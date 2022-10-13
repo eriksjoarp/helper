@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 #from helper \
+import shutil
+
 from helper import erik_functions_support as e_sup
 
 import os, tarfile, pathlib, time
@@ -12,71 +14,60 @@ import cv2
 from os import listdir
 from os.path import isfile, join
 import json
+import random
 
 
-def json_load(path_json):
-    if file_exists(path_json):
-        try:
-            with open(path_json) as json_file:
-                json_data = json.load(json_file)
-                return json_data
-        except Exception as e:
-            print('ERROR Could not read json file : ' + str(e))
-            return False
 
 
-def json_dump(path_json, json_data):
-    try:
-        with open(path_json, 'w') as outfile:
-            json.dump(json_data, outfile)
-    except Exception as e:
-        print('ERROR Could not write json file : ' + str(e))
+######################################                 path manipulations                  ##########################################
+
+def pathfile_make(dir_src ,file_src):
+    path_created = os.path.join(dir_src, file_src)
+
+    return path_created
+
+
+def dir_path_full(dir_src, dirs_last):
+    return_dirs = []
+    for sub_dir in dirs_last:
+        return_dirs.append(os.path.join(dir_src, sub_dir))
+    if not return_dirs:
         return False
+    return return_dirs
 
-
-def files_images_in_dir(dir_files, extensions=['.jpg','.png','.jpeg']):
-    path_images = []
-    files = files_in_dir_full_path(dir_files)
-    for file_iter in files:
-        for ext in extensions:
-            _, file_ext = file_name_from_path(file_iter)
-            if file_ext.lower() == ext:
-                path_images.append(file_iter)
-    return path_images
-
-
-def files_in_dir_full_path(dir_files):
-    files = files_in_dir(dir_files)
-    path_full = []
-    for filename in files:
-        path_file = os.path.join(dir_files, filename)
-        path_full.append(path_file)
-    return path_full
-
-def files_in_dir(dir_files):
-    if os.path.exists(dir_files):
-        files = [f for f in listdir(dir_files) if isfile(join(dir_files, f))]
-        return files
-    else:
-        print(r'''Error, directory doesn't exist:''' + dir_files)
-        return False
-
-
-def dirs_in_dir(dir_files):
+def dirs_in_dir(dir_files, full_path=False):
     if os.path.exists(dir_files):
         dirs = [f for f in listdir(dir_files) if os.path.isdir(join(dir_files, f))]
-        return dirs
     else:
         print(r'''Error, directory doesn't exist:''' + dir_files)
         return False
 
+    if full_path:
+        dirs = dir_path_full(dir_files, dirs)
+    return dirs
 
-def file_name_from_path(path):
+def dir_parent(path):
+    dir_from_path = os.path.split(os.path.abspath(path))[0]
+    #dir_parent = path.parent.absolute(dir_from_path)
+    return dir_from_path
+
+def dir_parent_basename(path):
+    dir_par = dir_parent(path)
+    dir_base = os.path.basename(path)
+    return dir_par, dir_base
+
+#
+def file_split_from_path(path):
     if file_exists(path):
         file_base = os.path.basename(path)
         file_name, file_ext = os.path.splitext(file_base)
         return file_name, file_ext
     return False, False
+
+
+def file_and_dir_from_path(pathfile):
+    dirname, filename = os.path.split(pathfile)
+    return dirname,filename
 
 def path_split_from_path(path):
     if file_exists(path):
@@ -86,107 +77,36 @@ def path_split_from_path(path):
         return dir_name, file_name, file_ext
     return False, False, False
 
+#   get all folders in a path
+def get_subfolders(dir_src):
+    folders = [f.path for f in os.scandir(dir_src) if f.is_dir()]
+    return folders
 
-#   create a new file and overwrite it , add lines to it from list
-#   ToDo quick dirty hack. It works for small config files but needs to be reimplemented
-def create_file_from_list(dir_dst, file_dst, lista , chmod = '644'):
-    create_missing_dirs(dir_dst)
+def filename_from_path(path):
+    return os.path.basename(path)
 
-    pathfile = pathfile_make(dir_dst , file_dst)
-    remove_file2(dir_dst, file_dst)
-
-    os.system('touch ' + pathfile)
-    os.system('chmod ' + str(chmod) + ' ' + pathfile)
-
-    for line0 in lista:
-        append_line_to_file(pathfile,line0)
-
-
-#   append string to last line in file
-#   ToDo quick dirty hack. It works for small config files but needs to be reimplemented
-def append_line_to_file(pathfile, appendage):
-    execute_command('echo ' + appendage + '>>' + pathfile)
-
-
-def pickle_write(data, pathfile):
-    with open(pathfile, 'wb') as handle:
-        pickle.dump(data, handle, protocol = pickle.HIGHEST_PROTOCOL)
-
-def pickle_read(pathfile):
-    with open(pathfile, 'rb') as handle:
-        data = pickle.load(handle)
-
-#   make tarfile
-def make_tarfile(output_filename , dir_src):
-    try:
-        with tarfile.open(output_filename , 'w:gz') as tar:
-            tar.add(dir_src , arcname=os.path.basename(dir_src))
-            tar.close()
-    except:
-        print('Error making tarfile :' + output_filename)
-        tar.close()
-        return False
-    return True
-
-
-def extract_tar(dir_src,filename_src, path_dest):
-    try:
-        tf = tarfile.open(pathfile_make(dir_src, filename_src))
-        tf.extractall(path_dest)
-        tf.close()
+def file_exists(path, supress_not_found=False):
+    if os.path.exists(path):
         return True
-    except:
-        print ('Extract error')
+    else:
+        if not(supress_not_found):
+            print('ERROR cannot find file ' + path)
         return False
 
-def cronjob_create(command_cronjob , schedule_cronjob , username ='root'):
-    cronjob_write = e_sup.cronjob_string(command_cronjob , schedule_cronjob = """* * * * *""" , username = """root""")
-    append_line_to_file("""/etc/crontab""" , cronjob_write)
+def path_exists(dir_src):
+    bExist = os.path.exists(dir_src)
+    return bExist
 
-def execute_command(command, sleep_secs = 0.2):
-    try:
-        print(command)
-        results = os.system(command)
-        time.sleep(sleep_secs)
-    except:
-        print('Error executing :' + command)
-        return False
-    return results
+def path_get_dir_and_file(path):
+    filename = os.path.basename(path)
+    directory = os.path.dirname(path)
+    return directory, filename
 
-#   get all filenames of an extension in a directory
-def get_filenames_in_dir(dir_src, extension ='NONE', full_path = False):
-    files=[]
-    dir_clean = return_dir_with_slash(dir_src)
-
-    if path_exists(dir_clean):
-        try:
-            filenames = os.listdir(dir_clean)
-            for filename in filenames:
-                if os.path.isfile(dir_clean + filename):
-                    if full_path:
-                        filename = os.path.join(dir_src, filename)
-                    if extension == 'NONE':
-                        files.append(filename)
-                    else:
-                        if filename.endswith(extension):
-                                files.append(filename)
-        except:
-            print ("Error get_files_in_dir")
-            return False
-    return files
-
-
-#   get config
-def get_config(path, filename , type_file):
-
-    pathfile = pathfile_make(path, filename)
-
-    config_files = get_filenames_in_dir(path, type_file)
-    config_file_name = config_files[0]
-    config = readfile_to_dict(config_file_name , pathfile)
-
-    return config
-
+#   check if a path is a directory
+def is_directory(path):
+    if os.path.isdir(path):
+        return True
+    return False
 
 # read lines in a file into list
 def get_filelines_to_list(dir_src, file_src):
@@ -219,6 +139,232 @@ def get_filelines_to_list(dir_src, file_src):
 
 
 
+
+######################################                    path contents                    ##########################################
+
+
+#   find filename in path_search return pathfile
+def find_path_filename(dir_search, filename):
+    for root,dirs,files in os.walk(dir_search):
+        for file in files:
+            if file.strip() == filename:
+                ret_string =  root + '/' + file.strip()
+                return ret_string.replace('//','/')
+
+    return False
+
+
+
+# return all files in a directory
+def files_in_dir(dir_files, full_path=False):
+    if os.path.exists(dir_files):
+        files = [f for f in listdir(dir_files) if isfile(join(dir_files, f))]
+    else:
+        print(r'''Error, directory doesn't exist:''' + dir_files)
+        return False
+
+    if full_path:
+        return_files = []
+        for file_unique in files:
+            return_files.append(os.path.join(dir_files, file_unique))
+    else:
+        return_files = files
+    return return_files
+
+
+def files_images_in_dir(dir_files, extensions=['.jpg','.png','.jpeg']):
+    path_images = []
+    files = files_in_dir_full_path(dir_files)
+    for file_iter in files:
+        for ext in extensions:
+            _, file_ext = file_split_from_path(file_iter)
+            if file_ext.lower() == ext:
+                path_images.append(file_iter)
+    return path_images
+
+
+def files_in_dir_full_path(dir_files):
+    files = files_in_dir(dir_files)
+    path_full = []
+    for filename in files:
+        path_file = os.path.join(dir_files, filename)
+        path_full.append(path_file)
+    return path_full
+
+
+def get_nr_files_from_dir(path, nr_files_per_dir=1000, randomize_list=True):
+    files = files_in_dir(path, full_path=True)
+    if randomize_list:
+        random.shuffle(files)
+
+    nr_files = min(len(files), nr_files_per_dir)
+    return files[:nr_files]
+
+
+
+# Find files in subdirs with correct extension
+def files_in_dirs(base_dir, extension='.csv'):
+    return_files = []
+    for path, current_directory, files in os.walk(base_dir):
+        for file in files:
+            if file.endswith(extension):
+                return_files.append(os.path.join(path, file))
+    return return_files
+
+
+
+
+#   get all filenames of an extension in a directory
+def get_filenames_in_dir(dir_src, extension ='NONE', full_path = False):
+    files=[]
+    dir_clean = return_dir_with_slash(dir_src)
+
+    if path_exists(dir_clean):
+        try:
+            filenames = os.listdir(dir_clean)
+            for filename in filenames:
+                if os.path.isfile(dir_clean + filename):
+                    if full_path:
+                        filename = os.path.join(dir_src, filename)
+                    if extension == 'NONE':
+                        files.append(filename)
+                    else:
+                        if filename.endswith(extension):
+                                files.append(filename)
+        except:
+            print ("Error get_files_in_dir")
+            return False
+    return files
+
+#   find filename in path_search return pathfile
+def find_string_in_file(dir_search, dir_dst, search_string):
+    count = 0
+    for root,dirs,files in os.walk(dir_search):
+        for file in files:
+            count +=1
+            if count%1000==0:
+                print(str(count))
+            command = 'string'
+    return False
+
+
+#   get total size of a dir
+def dir_size(dir_in):
+    total_size = 0
+
+    #for path,dirs,files in os.walk(dir):
+    #    for f in files:
+    #        fp = os.path.join(path,f)
+    #        total_size += os.path.getsize(fp)
+
+    total_size = subprocess.check_output(['du', '-sb', dir_in]).split()[0].decode('utf-8')
+    return total_size
+
+
+
+
+######################################                    write, read                      ##########################################
+
+#   create a new file and overwrite it , add lines to it from list
+#   ToDo quick dirty hack. It works for small config files but needs to be reimplemented
+def create_file_from_list(dir_dst, file_dst, lista , chmod = '644'):
+    create_missing_dirs(dir_dst)
+
+    pathfile = pathfile_make(dir_dst , file_dst)
+    remove_file2(dir_dst, file_dst)
+
+    os.system('touch ' + pathfile)
+    os.system('chmod ' + str(chmod) + ' ' + pathfile)
+
+    for line0 in lista:
+        append_line_to_file(pathfile,line0)
+
+
+def json_load(path_json):
+    if file_exists(path_json):
+        try:
+            with open(path_json) as json_file:
+                json_data = json.load(json_file)
+                return json_data
+        except Exception as e:
+            print('ERROR Could not read json file : ' + str(e))
+            return False
+
+
+def json_dump(path_json, json_data):
+    try:
+        with open(path_json, 'w') as outfile:
+            json.dump(json_data, outfile)
+    except Exception as e:
+        print('ERROR Could not write json file : ' + str(e))
+        return False
+
+
+
+def pickle_write(data, pathfile):
+    with open(pathfile, 'wb') as handle:
+        pickle.dump(data, handle, protocol = pickle.HIGHEST_PROTOCOL)
+
+def pickle_read(pathfile):
+    with open(pathfile, 'rb') as handle:
+        data = pickle.load(handle)
+
+
+#   get config
+def get_config(path, filename , type_file):
+
+    pathfile = pathfile_make(path, filename)
+
+    config_files = get_filenames_in_dir(path, type_file)
+    config_file_name = config_files[0]
+    config = readfile_to_dict(config_file_name , pathfile)
+
+    return config
+
+
+def image_read_from_file(path):
+    try:
+        img = cv2.imread(path)
+    except:
+        print('Could not find file : ' + str(path))
+        return False
+    return img
+
+def load_images_from_folder(path):
+    images = []
+    path_images = []
+    for filename in os.listdir(path):
+        img = cv2.imread(os.path.join(path,filename))
+        if img is not None:
+            images.append(img)
+            path_images.append((filename))
+    return images, path_images
+
+
+# copy list of files into dir_save
+def copy_files(path_files, dir_save):
+    os.makedirs(dir_save, exist_ok=True)
+    for path_file in path_files:
+        shutil.copy2(path_file, dir_save)
+    return True
+
+
+# write a list to file
+def write_list_to_file(path,my_list):
+    try:
+        os.remove(path)
+    except Exception as e:
+        pass
+
+    try:
+        with open(path, 'w') as f:
+            f.write("\n".join(my_list))
+        return True
+    except Exception as e:
+        pass
+    return False
+
+
 #   read fileconfig into dictionary
 def readfile_to_dict(dir_src , file_src, separator=','):
     lines = get_filelines_to_list(dir_src, file_src)
@@ -232,43 +378,67 @@ def readfile_to_dict(dir_src , file_src, separator=','):
     return ordbok
 
 
-#   get all folders in a path
-def get_subfolders(dir_src):
-    folders = [f.path for f in os.scandir(dir_src) if f.is_dir()]
-    return folders
 
-def filename_from_path(path):
-    return os.path.basename(path)
+######################################                        operate on files                      ##########################################
 
 
-##########                  EXISTENCE   CHECKS              ##########
-# Check if file exists
-def file_exists(path, supress_not_found=False):
-    if os.path.exists(path):
+#   make tarfile
+def make_tarfile(output_filename , dir_src):
+    try:
+        with tarfile.open(output_filename , 'w:gz') as tar:
+            tar.add(dir_src , arcname=os.path.basename(dir_src))
+            tar.close()
+    except:
+        print('Error making tarfile :' + output_filename)
+        tar.close()
+        return False
+    return True
+
+
+def extract_tar(dir_src,filename_src, path_dest):
+    try:
+        tf = tarfile.open(pathfile_make(dir_src, filename_src))
+        tf.extractall(path_dest)
+        tf.close()
         return True
-    else:
-        if not(supress_not_found):
-            print('ERROR cannot find file ' + path)
+    except:
+        print ('Extract error')
         return False
 
-def path_exists(dir_src):
-    bExist = os.path.exists(dir_src)
-    return bExist
-
-def path_get_dir_and_file(path):
-    filename = os.path.basename(path)
-    directory = os.path.dirname(path)
-    return directory, filename
-
-#   check if a path is a directory
-def is_directory(path):
-    if os.path.isdir(path):
-        return True
-    return False
 
 
+######################################                  compatibility                   ##############################################
 
-######      COPY    MOVE    DELETE  RELATED
+
+def execute_command(command, sleep_secs = 0.2):
+    try:
+        print(command)
+        results = os.system(command)
+        time.sleep(sleep_secs)
+    except:
+        print('Error executing :' + command)
+        return False
+    return results
+
+
+
+######################################                  linux                           ##############################################
+
+#   Linux
+#   append string to last line in file
+#   ToDo quick dirty hack. It works for small config files but needs to be reimplemented
+def append_line_to_file(pathfile, appendage):
+    execute_command('echo ' + appendage + '>>' + pathfile)
+
+
+def cronjob_create(command_cronjob , schedule_cronjob , username ='root'):
+    cronjob_write = e_sup.cronjob_string(command_cronjob , schedule_cronjob = """* * * * *""" , username = """root""")
+    append_line_to_file("""/etc/crontab""" , cronjob_write)
+
+
+
+
+########################                  DELETE
 def create_missing_dirs(pathfile):
     # check if it ends with / then its a dir
     #dir_src = pathfile
@@ -354,10 +524,6 @@ def rename_file(dir_src,file_src, dir_dst, file_dst):
     return success
 
 
-def pathfile_make(dir_src ,file_src):
-    path_created = os.path.join(dir_src, file_src)
-
-    return path_created
 
 
 #   make new dirs
@@ -414,46 +580,6 @@ def move_overwrite_file(dir_src, file_src, dir_dst):
     return success
 
 
-#   find filename in path_search return pathfile
-def find_string_in_file(dir_search, dir_dst, search_string):
-    count = 0
-    for root,dirs,files in os.walk(dir_search):
-        for file in files:
-            count +=1
-            if count%1000==0:
-                print(str(count))
-            command = 'string'
-
-
-    return False
-
-#   get total size of a dir
-def dir_size(dir):
-    total_size = 0
-
-    #for path,dirs,files in os.walk(dir):
-    #    for f in files:
-    #        fp = os.path.join(path,f)
-    #        total_size += os.path.getsize(fp)
-
-    total_size = subprocess.check_output(['du', '-sb', dir]).split()[0].decode('utf-8')
-
-    return total_size
-
-
-
-
-
-#   find filename in path_search return pathfile
-def find_path_filename(dir_search, filename):
-    for root,dirs,files in os.walk(dir_search):
-        for file in files:
-            if file.strip() == filename:
-                ret_string =  root + '/' + file.strip()
-                return ret_string.replace('//','/')
-
-    return False
-
 
 
 def copy_and_extract_tar_into_empty_dir_return_folderpath(dir_src, filename_src, path_dst):
@@ -471,12 +597,12 @@ def copy_and_extract_tar_into_empty_dir_return_folderpath(dir_src, filename_src,
 
 ############                        OTHER                       ############
 
-def get_dir(pathfile):
-    dir_src , file_src = pathfile.rsplit('/', 1)
+def get_dir(path_file):
+    dir_src , file_src = path_file.rsplit('/', 1)
     return dir_src
 
-def get_file(pathfile):
-    dir_src , file_src = pathfile.rsplit('/', 1)
+def get_file(path_file):
+    dir_src , file_src = path_file.rsplit('/', 1)
     return file_src
 
 
@@ -507,23 +633,6 @@ def escape_chars(name):
             new_name = new_name + char
 
     return new_name
-
-
-def file_and_dir_from_path(pathfile):
-    dirname, filename = os.path.split(pathfile)
-    dirname = dirname + '/'
-
-    return dirname,filename
-
-# Find files in subdirs with correct extension
-def files_in_dirs(base_dir, extension='.csv'):
-    return_files = []
-    for path, current_directory, files in os.walk(base_dir):
-        for file in files:
-            if file.endswith(extension):
-                return_files.append(os.path.join(path, file))
-    return return_files
-
 
 
 
@@ -563,42 +672,9 @@ def remove_flag(path, flagname):
 
 
 
-##############          load from disk such as image            #################
-
-def image_read_from_file(path):
-    try:
-        img = cv2.imread(path)
-    except:
-        print('Could not find file : ' + str(path))
-        return False
-    return img
-
-def load_images_from_folder(path):
-    images = []
-    path_images = []
-    for filename in os.listdir(path):
-        img = cv2.imread(os.path.join(path,filename))
-        if img is not None:
-            images.append(img)
-            path_images.append((filename))
-    return images, path_images
-
-# write a list to file
-def write_list_to_file(path,my_list):
-    try:
-        os.remove(path)
-    except Exception as e:
-        pass
-
-    try:
-        with open(path, 'w') as f:
-            f.write("\n".join(my_list))
-        return True
-    except Exception as e:
-        pass
-    return False
 
 
+'''
 # read yaml file
 def load_config_yaml(dir_yaml, filename):
     path = os.path.join(dir_yaml, filename)
@@ -609,12 +685,7 @@ def load_config_yaml(dir_yaml, filename):
             print('ERROR cannot open file ' + path)
             return False
     return yaml_data
-
-
-
-
-
-
+'''
 
 
 
