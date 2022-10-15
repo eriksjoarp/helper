@@ -57,10 +57,13 @@ def dir_parent_basename(path):
     return dir_par, dir_base
 
 #
-def file_split_from_path(path):
-    if file_exists(path):
-        file_base = os.path.basename(path)
-        file_name, file_ext = os.path.splitext(file_base)
+def file_split_from_path(path, must_exist=True):
+    file_base = os.path.basename(path)
+    file_name, file_ext = os.path.splitext(file_base)
+    if must_exist:
+        if file_exists(path):
+            return file_name, file_ext
+    else:
         return file_name, file_ext
     return False, False
 
@@ -341,14 +344,28 @@ def load_images_from_folder(path):
     return images, path_images
 
 
-# copy list of files into dir_save
-def copy_files(path_files, dir_save, delete_old=False):
-    if delete_old:
+# copy all files in a dir to another and possibly remove all the old files
+def copy_files_from_dir_to_dir(dir_from, dir_save, delete_old_save=False, delete_old_src=False):
+    files = get_filenames_in_dir(dir_from, full_path=True)
+    copy_files(files, dir_save=dir_save, delete_old_save=delete_old_save, delete_old_src= delete_old_src)
+    return True
+
+
+# copy list of files into dir_save, removes everything in save dir and everything in src dir if the flags are set to True
+def copy_files(path_files, dir_save, delete_old_src=False, delete_old_save=False):
+    # remove old files in save directory
+    if delete_old_save:
         shutil.rmtree(dir_save, ignore_errors=True)
 
     os.makedirs(dir_save, exist_ok=True)
-    for path_file in path_files:
+    for path_file in path_files:                            # copy files
         shutil.copy2(path_file, dir_save)
+
+    # remove old files in src directory
+    if delete_old_src:
+        dir_remove, _ = path_get_dir_and_file(path_files[0])
+        shutil.rmtree(dir_remove, ignore_errors=True)
+        os.makedirs(dir_remove)
     return True
 
 
