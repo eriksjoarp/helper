@@ -290,23 +290,22 @@ def json_load(path_json):
                 json_data = json.load(json_file)
                 return json_data
         except Exception as e:
-            print('ERROR Could not read json file : ' + str(e))
+            print('ERROR Could not read json file : ' + str(path_json) + ' error: ' + str(e))
             return False
 
 
 def json_dump(path_json, json_data):
     try:
         with open(path_json, 'w') as outfile:
-            json.dump(json_data, outfile)
+            json.dump(json_data, outfile, indent=2)
     except Exception as e:
-        print('ERROR Could not write json file : ' + str(e))
+        print('ERROR Could not write json file : ' + str(path_json) + ' error: ' + str(e))
         return False
-
 
 
 def pickle_write(data, pathfile):
     with open(pathfile, 'wb') as handle:
-        pickle.dump(data, handle, protocol = pickle.HIGHEST_PROTOCOL)
+        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def pickle_read(pathfile):
     with open(pathfile, 'rb') as handle:
